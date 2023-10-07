@@ -28,7 +28,11 @@ import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineListener;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 
 
 import javax.swing.Timer;
@@ -43,6 +47,7 @@ public class UIBobaTruck extends javax.swing.JFrame {
      * Creates new form UIBobaTruck
      */
     
+    //General Variables
     private int selected_avatar = 0; 
     private boolean hasStartedPlaying = false;
     //Game Stats
@@ -58,7 +63,11 @@ public class UIBobaTruck extends javax.swing.JFrame {
     private int max_missed_customers = 4; //default 4 
     private double tips; //resets each new day
     
-    private String[] current_orders = {};
+
+    private Map<String, String> current_orders = new HashMap<>();
+    {
+        
+    }
     private String[] ready_orders = {};
     
             //Station Stats
@@ -68,7 +77,10 @@ public class UIBobaTruck extends javax.swing.JFrame {
             private double BOBA_STATION = DEFAULT_DURATION; //Seconds
             
             
-            
+    //Movement Variables
+    private int playerX = 50; 
+    private int playerY = 50;
+    private int speed = 8; //stud increment    
     //Avatar Option [Mechanics]
     private Map<String, String> avatarTable = new HashMap<>();
     {
@@ -81,52 +93,75 @@ public class UIBobaTruck extends javax.swing.JFrame {
     
     ArrayList<String> avatarList = new ArrayList<>(avatarTable.values());
     
-    
-     //Movement
-    private int playerX = 50; 
-    private int playerY = 50;
-    private int speed = 8; //stud increment
-    
+
     public void MovementSystem() {
-       addKeyListener(new KeyAdapter() {
-           @Override 
-           public void keyPressed(KeyEvent e) {
-               int newX = playerX;
-               int newY = playerY;
-               
-               
-               switch(e.getKeyCode()) {
-                   case KeyEvent.VK_W: //Move Up
-                      if (hasStartedPlaying == true) 
-                       newY -= speed;
-                       break;
-                   case KeyEvent.VK_S: //Move Down
-                      if (hasStartedPlaying == true) 
-                       newY += speed;
-                       break;    
-                   case KeyEvent.VK_A: //Move Left
-                      if (hasStartedPlaying == true) 
-                       newX -= speed;
-                       break;
-                   case KeyEvent.VK_D: //Move Right
-                      if (hasStartedPlaying == true) 
-                       newX += speed;
-                       break;
-               }
-               
-               //Within Panel Borders
-              if (newX >= 0 && newX <= Character_Walking_Area.getWidth() - Main_StarterCharacter.getWidth() &&
-                    newY >= 0 && newY <= Character_Walking_Area.getHeight() - Main_StarterCharacter.getHeight()) {
-                    // Update player position
-                    playerX = newX;
-                    playerY = newY;
-                    Main_StarterCharacter.setLocation(playerX, playerY);
+        // Define actions for each movement direction
+        Action moveUp = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (hasStartedPlaying) {
+                    playerY -= speed;
+                    updatePlayerPosition();
                 }
-           }
-           
-       });
-       setFocusable(true);
+            }
+        };
+    
+        
+
+        Action moveDown = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (hasStartedPlaying) {
+                    playerY += speed;
+                    updatePlayerPosition();
+                }
+            }
+        };
+
+        Action moveLeft = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (hasStartedPlaying) {
+                    playerX -= speed;
+                    updatePlayerPosition();
+                }
+            }
+        };
+
+        Action moveRight = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (hasStartedPlaying) {
+                    playerX += speed;
+                    updatePlayerPosition();
+                }
+            }
+        };
+
+        // Bind actions to keys
+        //Ensures I can still move the player when I click other buttons
+        Main.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("W"), "moveUp");
+        Main.getActionMap().put("moveUp", moveUp);
+
+        Main.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("S"), "moveDown");
+        Main.getActionMap().put("moveDown", moveDown);
+
+        Main.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("A"), "moveLeft");
+        Main.getActionMap().put("moveLeft", moveLeft);
+
+        Main.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("D"), "moveRight");
+        Main.getActionMap().put("moveRight", moveRight);
+
+        setFocusable(true);
     }
+
+    private void updatePlayerPosition() {
+        if (playerX >= 0 && playerX <= Character_Walking_Area.getWidth() - Main_StarterCharacter.getWidth() &&
+            playerY >= 0 && playerY <= Character_Walking_Area.getHeight() - Main_StarterCharacter.getHeight()) {
+            Main_StarterCharacter.setLocation(playerX, playerY);
+        }
+    }
+
     // 
     public UIBobaTruck() {
         initComponents();
@@ -160,6 +195,88 @@ public class UIBobaTruck extends javax.swing.JFrame {
             timer.start(); // Start the timer
      }
     
+    //   [Main Game Functions]
+    
+    //NPC Customers System
+    boolean rushHour = false;
+    
+    boolean isVisible_Customer1 = true;
+    boolean isVisible_Customer2= true;
+    boolean isVisible_Customer3 = true;
+     
+    String[] greetings = {"Thanks!", ":)", "<3","Okay!","Sweet!"};
+     
+    public void NPC_Randomization() {
+        //at first game instance, no customers
+            
+           
+            //method for npc1
+            
+               
+               //if visible and icon1 is empty then
+                    //do nothing
+                //if not visible (Customer can spawn)
+                   //if rush hour = false
+                     //wait random seconds between 5-10
+                          //choose a random customer NPC image
+                            //set icon to that image
+                            
+                           //choose random order from array (drinks, crepes, bakery) 
+                            //set display text to what was chosen
+                   //else if rush hour = true
+                        //wait 2 seconds (faster respawning)
+                          
+            //method for npc2
+            
+            
+            //method for npc3
+            
+            
+            
+    }
+    
+    //handler for order buttons
+    boolean button1_pressable = true;
+    boolean button2_poressable = true;
+    boolean button3_pressable = true;
+    
+    public void NPC_Buttons() {
+  
+        //button 1
+                //if button is clicked
+                //checkn if pressable == true
+                    //make pressable = false
+                    //change label text to a random thank you statement 
+                    
+                    //add the order to current_orders HASMAP Format:     "Slot1" "Order"
+                       //update and display the order (convert array into string and display in a label)
+                        
+        
+        //button 2
+        
+        
+        //button 3
+    }
+    
+    //Method for serving orders
+    public void Order_Completed() {
+        //once a station completes whatever
+            //add the completed order into array (Completed_Orders)
+                //compare completed orders array and current_order hasmap 
+                    //if matches --> 
+                        //random cash amount ($5-20) add into total currency and current earnings
+                         //play register/cash sound
+                         
+                         //change image icon of npc slot to empty (Reference String1 in Hasmap of Current_Orders)
+                         
+                        // remove the order from currenr_order hasmap and completed_orders
+                         //hide the respective order button/bubble chat
+                         
+                            //execute NPC_Randomization method again to respawn customers
+                         
+    }
+                
+ 
      //Game Menu Functions
     public void StartTheGame() {
          //StartGame_Button
@@ -179,7 +296,7 @@ public class UIBobaTruck extends javax.swing.JFrame {
                  load3.setVisible(false);
                  load4.setVisible(false);
 
-                 int[] n = {3}; 
+                 int[] n = {1}; 
                  // Set initial visibility and start the sequence
                  playSound("src/SoundAssets/loading_pop.wav");
                  load1.setVisible(true);
@@ -312,7 +429,6 @@ public class UIBobaTruck extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
         Menu = new javax.swing.JPanel();
         HowToPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -337,26 +453,39 @@ public class UIBobaTruck extends javax.swing.JFrame {
         Main_Panel = new javax.swing.JPanel();
         StatsPanel = new javax.swing.JPanel();
         Sales_Display = new javax.swing.JLabel();
-        Station_Boba = new javax.swing.JButton();
         Tip_Jar = new javax.swing.JButton();
-        Station_Bakery1 = new javax.swing.JButton();
-        Station_Crepes2 = new javax.swing.JButton();
+        Station_Drinks = new javax.swing.JButton();
         Registers = new javax.swing.JLabel();
         Character_Walking_Area = new javax.swing.JPanel();
         Main_StarterCharacter = new javax.swing.JLabel();
+        Station_Crepes3 = new javax.swing.JButton();
+        Order_Display_1 = new javax.swing.JLabel() {
+            @Override
+            public boolean contains(int x, int y) {
+                return false;
+            }
+        };
+        Order_Display_3 = new javax.swing.JLabel() {
+            @Override
+            public boolean contains(int x, int y) {
+                return false;
+            }
+        };
+        Order_Display_2 = new javax.swing.JLabel() {
+            @Override
+            public boolean contains(int x, int y) {
+                return false;
+            }
+        };
+        Station_Bakery1 = new javax.swing.JButton();
+        Order_Bubble2 = new javax.swing.JButton();
+        Order_Bubble = new javax.swing.JButton();
+        Order_Bubble1 = new javax.swing.JButton();
         background_kitchen = new javax.swing.JLabel();
         background_outside = new javax.swing.JPanel();
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
+        npc_slot1 = new javax.swing.JLabel();
+        npc_slot4 = new javax.swing.JLabel();
+        npc_slot3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -539,7 +668,7 @@ public class UIBobaTruck extends javax.swing.JFrame {
                     .addComponent(load2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(load1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(load4, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(256, Short.MAX_VALUE))
+                .addContainerGap(252, Short.MAX_VALUE))
         );
 
         Menu.add(loading_phases);
@@ -569,7 +698,7 @@ public class UIBobaTruck extends javax.swing.JFrame {
         Menu_Panel1Layout.setVerticalGroup(
             Menu_Panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Menu_Panel1Layout.createSequentialGroup()
-                .addContainerGap(534, Short.MAX_VALUE)
+                .addContainerGap(528, Short.MAX_VALUE)
                 .addComponent(StartGame_Button, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(81, 81, 81))
         );
@@ -598,18 +727,7 @@ public class UIBobaTruck extends javax.swing.JFrame {
         StatsPanel.add(Sales_Display);
         Sales_Display.setBounds(660, 440, 60, 20);
 
-        Station_Boba.setBackground(new java.awt.Color(51, 51, 51));
-        Station_Boba.setFont(new java.awt.Font("Microsoft JhengHei", 1, 12)); // NOI18N
-        Station_Boba.setText("Bubble Tea");
-        Station_Boba.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Station_BobaActionPerformed(evt);
-            }
-        });
-        StatsPanel.add(Station_Boba);
-        Station_Boba.setBounds(1160, 360, 110, 24);
-
-        Tip_Jar.setBackground(new java.awt.Color(204, 200, 122));
+        Tip_Jar.setBackground(new java.awt.Color(193, 122, 117));
         Tip_Jar.setFont(new java.awt.Font("Comic Sans MS", 1, 12)); // NOI18N
         Tip_Jar.setForeground(new java.awt.Color(51, 51, 51));
         Tip_Jar.setText("$67");
@@ -621,27 +739,20 @@ public class UIBobaTruck extends javax.swing.JFrame {
         StatsPanel.add(Tip_Jar);
         Tip_Jar.setBounds(500, 310, 60, 20);
 
-        Station_Bakery1.setBackground(new java.awt.Color(51, 51, 51));
-        Station_Bakery1.setFont(new java.awt.Font("Microsoft JhengHei", 1, 12)); // NOI18N
-        Station_Bakery1.setText("Bakery");
-        Station_Bakery1.addActionListener(new java.awt.event.ActionListener() {
+        Station_Drinks.setBackground(new java.awt.Color(210, 201, 165));
+        Station_Drinks.setFont(new java.awt.Font("Microsoft JhengHei", 1, 12)); // NOI18N
+        Station_Drinks.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/Drinks_Button.png"))); // NOI18N
+        Station_Drinks.setBorder(null);
+        Station_Drinks.setBorderPainted(false);
+        Station_Drinks.setContentAreaFilled(false);
+        Station_Drinks.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Station_Drinks.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Station_Bakery1ActionPerformed(evt);
+                Station_DrinksActionPerformed(evt);
             }
         });
-        StatsPanel.add(Station_Bakery1);
-        Station_Bakery1.setBounds(220, 290, 80, 24);
-
-        Station_Crepes2.setBackground(new java.awt.Color(51, 51, 51));
-        Station_Crepes2.setFont(new java.awt.Font("Microsoft JhengHei", 1, 12)); // NOI18N
-        Station_Crepes2.setText("Crepes");
-        Station_Crepes2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Station_Crepes2ActionPerformed(evt);
-            }
-        });
-        StatsPanel.add(Station_Crepes2);
-        Station_Crepes2.setBounds(330, 390, 80, 24);
+        StatsPanel.add(Station_Drinks);
+        Station_Drinks.setBounds(1180, 380, 80, 30);
 
         Registers.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/Main_Game_Assets/register.png"))); // NOI18N
         StatsPanel.add(Registers);
@@ -676,6 +787,85 @@ public class UIBobaTruck extends javax.swing.JFrame {
         StatsPanel.add(Character_Walking_Area);
         Character_Walking_Area.setBounds(0, 408, 1280, 260);
 
+        Station_Crepes3.setBackground(new java.awt.Color(210, 201, 165));
+        Station_Crepes3.setFont(new java.awt.Font("Microsoft JhengHei", 1, 12)); // NOI18N
+        Station_Crepes3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/Crepes_Button.png"))); // NOI18N
+        Station_Crepes3.setBorder(null);
+        Station_Crepes3.setBorderPainted(false);
+        Station_Crepes3.setContentAreaFilled(false);
+        Station_Crepes3.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Station_Crepes3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Station_Crepes3ActionPerformed(evt);
+            }
+        });
+        StatsPanel.add(Station_Crepes3);
+        Station_Crepes3.setBounds(330, 384, 80, 30);
+
+        Order_Display_1.setFont(new java.awt.Font("Arial Narrow", 1, 12)); // NOI18N
+        Order_Display_1.setForeground(new java.awt.Color(109, 86, 77));
+        Order_Display_1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        Order_Display_1.setText("Crepes");
+        StatsPanel.add(Order_Display_1);
+        Order_Display_1.setBounds(860, 270, 80, 20);
+
+        Order_Display_3.setFont(new java.awt.Font("Arial Narrow", 1, 12)); // NOI18N
+        Order_Display_3.setForeground(new java.awt.Color(109, 86, 77));
+        Order_Display_3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        Order_Display_3.setText("Crepes");
+        StatsPanel.add(Order_Display_3);
+        Order_Display_3.setBounds(710, 270, 80, 20);
+
+        Order_Display_2.setFont(new java.awt.Font("Arial Narrow", 1, 12)); // NOI18N
+        Order_Display_2.setForeground(new java.awt.Color(109, 86, 77));
+        Order_Display_2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        Order_Display_2.setText("Crepes");
+        StatsPanel.add(Order_Display_2);
+        Order_Display_2.setBounds(570, 270, 80, 20);
+
+        Station_Bakery1.setBackground(new java.awt.Color(210, 201, 165));
+        Station_Bakery1.setFont(new java.awt.Font("Microsoft JhengHei", 1, 12)); // NOI18N
+        Station_Bakery1.setForeground(new java.awt.Color(210, 201, 165));
+        Station_Bakery1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/Bakery_Button.png"))); // NOI18N
+        Station_Bakery1.setBorder(null);
+        Station_Bakery1.setBorderPainted(false);
+        Station_Bakery1.setContentAreaFilled(false);
+        Station_Bakery1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Station_Bakery1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Station_Bakery1ActionPerformed(evt);
+            }
+        });
+        StatsPanel.add(Station_Bakery1);
+        Station_Bakery1.setBounds(220, 310, 80, 30);
+
+        Order_Bubble2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/order_bubble.png"))); // NOI18N
+        Order_Bubble2.setBorder(null);
+        Order_Bubble2.setContentAreaFilled(false);
+        Order_Bubble2.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Order_Bubble2.setFocusPainted(false);
+        Order_Bubble2.setHideActionText(true);
+        StatsPanel.add(Order_Bubble2);
+        Order_Bubble2.setBounds(700, 270, 100, 50);
+
+        Order_Bubble.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/order_bubble.png"))); // NOI18N
+        Order_Bubble.setBorder(null);
+        Order_Bubble.setContentAreaFilled(false);
+        Order_Bubble.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Order_Bubble.setFocusPainted(false);
+        Order_Bubble.setHideActionText(true);
+        StatsPanel.add(Order_Bubble);
+        Order_Bubble.setBounds(850, 270, 100, 50);
+
+        Order_Bubble1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/order_bubble.png"))); // NOI18N
+        Order_Bubble1.setBorder(null);
+        Order_Bubble1.setContentAreaFilled(false);
+        Order_Bubble1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Order_Bubble1.setFocusPainted(false);
+        Order_Bubble1.setHideActionText(true);
+        StatsPanel.add(Order_Bubble1);
+        Order_Bubble1.setBounds(560, 270, 100, 50);
+
         javax.swing.GroupLayout Main_PanelLayout = new javax.swing.GroupLayout(Main_Panel);
         Main_Panel.setLayout(Main_PanelLayout);
         Main_PanelLayout.setHorizontalGroup(
@@ -692,11 +882,27 @@ public class UIBobaTruck extends javax.swing.JFrame {
         Main.add(Main_Panel);
 
         background_kitchen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/Main_Game_Assets/main_background.png"))); // NOI18N
+        background_kitchen.setFocusable(false);
         background_kitchen.setMaximumSize(new java.awt.Dimension(1280, 667));
+        background_kitchen.setVerifyInputWhenFocusTarget(false);
         Main.add(background_kitchen);
 
         background_outside.setBackground(new java.awt.Color(130, 114, 104));
-        background_outside.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        background_outside.setPreferredSize(new java.awt.Dimension(1998, 800));
+        background_outside.setLayout(null);
+
+        npc_slot1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/Characters/npc_villager.png"))); // NOI18N
+        background_outside.add(npc_slot1);
+        npc_slot1.setBounds(820, 300, 100, 130);
+
+        npc_slot4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/Characters/npc_chineseV1.png"))); // NOI18N
+        background_outside.add(npc_slot4);
+        npc_slot4.setBounds(550, 300, 100, 130);
+
+        npc_slot3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/Characters/npc_fisherV1.png"))); // NOI18N
+        background_outside.add(npc_slot3);
+        npc_slot3.setBounds(680, 300, 100, 130);
+
         Main.add(background_outside);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -705,13 +911,13 @@ public class UIBobaTruck extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(Menu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(Main, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(Main, javax.swing.GroupLayout.DEFAULT_SIZE, 1280, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(Menu, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE)
+            .addComponent(Menu, javax.swing.GroupLayout.DEFAULT_SIZE, 667, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(Main, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(Main, javax.swing.GroupLayout.DEFAULT_SIZE, 667, Short.MAX_VALUE))
         );
 
         pack();
@@ -721,21 +927,21 @@ public class UIBobaTruck extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_Select_LeftActionPerformed
 
-    private void Station_BobaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Station_BobaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_Station_BobaActionPerformed
-
     private void Tip_JarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Tip_JarActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_Tip_JarActionPerformed
 
+    private void Station_DrinksActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Station_DrinksActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Station_DrinksActionPerformed
+
+    private void Station_Crepes3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Station_Crepes3ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Station_Crepes3ActionPerformed
+
     private void Station_Bakery1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Station_Bakery1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_Station_Bakery1ActionPerformed
-
-    private void Station_Crepes2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Station_Crepes2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_Station_Crepes2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -780,6 +986,12 @@ public class UIBobaTruck extends javax.swing.JFrame {
     private javax.swing.JLabel Main_StarterCharacter;
     private javax.swing.JPanel Menu;
     private javax.swing.JPanel Menu_Panel1;
+    private javax.swing.JButton Order_Bubble;
+    private javax.swing.JButton Order_Bubble1;
+    private javax.swing.JButton Order_Bubble2;
+    private javax.swing.JLabel Order_Display_1;
+    private javax.swing.JLabel Order_Display_2;
+    private javax.swing.JLabel Order_Display_3;
     private javax.swing.JLabel Registers;
     private javax.swing.JLabel Sales_Display;
     private javax.swing.JButton Select_Left;
@@ -787,8 +999,8 @@ public class UIBobaTruck extends javax.swing.JFrame {
     private javax.swing.JButton StartGame_Button;
     private javax.swing.JLabel StarterCharacter;
     private javax.swing.JButton Station_Bakery1;
-    private javax.swing.JButton Station_Boba;
-    private javax.swing.JButton Station_Crepes2;
+    private javax.swing.JButton Station_Crepes3;
+    private javax.swing.JButton Station_Drinks;
     private javax.swing.JPanel StatsPanel;
     private javax.swing.JButton Tip_Jar;
     private javax.swing.JLabel background_game_menu;
@@ -801,11 +1013,13 @@ public class UIBobaTruck extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel load1;
     private javax.swing.JLabel load2;
     private javax.swing.JLabel load3;
     private javax.swing.JLabel load4;
     private javax.swing.JPanel loading_phases;
+    private javax.swing.JLabel npc_slot1;
+    private javax.swing.JLabel npc_slot3;
+    private javax.swing.JLabel npc_slot4;
     // End of variables declaration//GEN-END:variables
 }
