@@ -10,16 +10,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-
+import java.util.Random;
 import java.io.IOException;
 
 //SOUND Imports
 import java.io.File;
+import static java.lang.Math.random;
+import static java.lang.StrictMath.random;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
-import javax.sound.sampled;
 import java.util.concurrent.TimeUnit;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -29,9 +31,10 @@ import javax.sound.sampled.LineListener;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
+import javax.swing.Action; 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 
 
@@ -91,9 +94,21 @@ public class UIBobaTruck extends javax.swing.JFrame {
 
     }
     
+    private static Map<String, String> npcs = new HashMap<>();
+      static {
+          npcs.put("npc1", "src/Assets/Characters/npc_chineseV1.png");
+          npcs.put("npc2", "src/Assets/Characters/npc_chineseV2.png");
+          npcs.put("npc3", "src/Assets/Characters/npc_fisherV1.png");
+          npcs.put("npc4", "src/Assets/Characters/npc_fisherV2.png");
+          npcs.put("npc5", "src/Assets/Characters/npc_malay.png");
+          npcs.put("npc6", "src/Assets/Characters/npc_old.png");
+          npcs.put("npc7", "src/Assets/Characters/npc_villager.png");
+      }
+
     ArrayList<String> avatarList = new ArrayList<>(avatarTable.values());
     
-
+    ArrayList<String> npcsList = new ArrayList<>(npcs.values());
+    
     public void MovementSystem() {
         // Define actions for each movement direction
         Action moveUp = new AbstractAction() {
@@ -205,35 +220,34 @@ public class UIBobaTruck extends javax.swing.JFrame {
     boolean isVisible_Customer3 = true;
      
     String[] greetings = {"Thanks!", ":)", "<3","Okay!","Sweet!"};
-     
-    public void NPC_Randomization() {
-        //at first game instance, no customers
-            
-           
-            //method for npc1
-            
-               
-               //if visible and icon1 is empty then
-                    //do nothing
-                //if not visible (Customer can spawn)
-                   //if rush hour = false
-                     //wait random seconds between 5-10
-                          //choose a random customer NPC image
-                            //set icon to that image
-                            
-                           //choose random order from array (drinks, crepes, bakery) 
-                            //set display text to what was chosen
-                   //else if rush hour = true
-                        //wait 2 seconds (faster respawning)
-                          
-            //method for npc2
+    String[] possible_orders = {"Bubble Tea", "Crepe", "Mamon", "Smoothie", "Milkshake"};
             
             
-            //method for npc3
-            
-            
-            
+       public void NPC_Randomization() {
+        spawnNPC(isVisible_Customer1, npc_slot1, Order_Display_1);
+        spawnNPC(isVisible_Customer2, npc_slot2, Order_Display_2);
+        spawnNPC(isVisible_Customer3, npc_slot3, Order_Display_3);
     }
+
+    private void spawnNPC(boolean isVisible, JLabel npc_slot, JLabel orderDisplay) {
+        if (isVisible && npc_slot.getIcon() == null) {
+            // active npc
+            return;
+        }
+
+        // inactive npc, spawn npc (Can Spawn)
+        Random random = new Random();
+        int randomWait = rushHour ? 1 : 5 + random.nextInt(6);
+        DelayMethod(randomWait, () -> {
+            String randomImage = npcsList.get(ThreadLocalRandom.current().nextInt(npcsList.size()));
+            npc_slot.setIcon(new ImageIcon(getClass().getResource(randomImage)));
+
+            int randomIndex = random.nextInt(possible_orders.length);
+            String random_order = possible_orders[randomIndex];
+            orderDisplay.setText(random_order);
+        });
+    }
+
     
     //handler for order buttons
     boolean button1_pressable = true;
@@ -484,8 +498,8 @@ public class UIBobaTruck extends javax.swing.JFrame {
         background_kitchen = new javax.swing.JLabel();
         background_outside = new javax.swing.JPanel();
         npc_slot1 = new javax.swing.JLabel();
-        npc_slot4 = new javax.swing.JLabel();
         npc_slot3 = new javax.swing.JLabel();
+        npc_slot2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -583,7 +597,7 @@ public class UIBobaTruck extends javax.swing.JFrame {
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(StarterCharacter)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 161, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 154, Short.MAX_VALUE)
                 .addComponent(jLabel2)
                 .addGap(18, 18, 18)
                 .addGroup(HowToPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -641,19 +655,17 @@ public class UIBobaTruck extends javax.swing.JFrame {
                 .addGroup(loading_phasesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, loading_phasesLayout.createSequentialGroup()
                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 446, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(252, 252, 252))
+                        .addGap(21, 21, 21))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, loading_phasesLayout.createSequentialGroup()
-                        .addGroup(loading_phasesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(loading_phasesLayout.createSequentialGroup()
-                                .addComponent(load1)
-                                .addGap(48, 48, 48)
-                                .addComponent(load2)
-                                .addGap(54, 54, 54)
-                                .addComponent(load3)
-                                .addGap(43, 43, 43)
-                                .addComponent(load4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(231, 231, 231))))
+                        .addComponent(load1)
+                        .addGap(48, 48, 48)
+                        .addComponent(load2)
+                        .addGap(54, 54, 54)
+                        .addComponent(load3)
+                        .addGap(43, 43, 43)
+                        .addComponent(load4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(231, 231, 231))
         );
         loading_phasesLayout.setVerticalGroup(
             loading_phasesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -679,9 +691,9 @@ public class UIBobaTruck extends javax.swing.JFrame {
         Menu_Panel1.setPreferredSize(new java.awt.Dimension(800, 700));
 
         StartGame_Button.setBackground(new java.awt.Color(153, 135, 155));
-        StartGame_Button.setFont(new java.awt.Font("BLOXAT", 3, 36)); // NOI18N
+        StartGame_Button.setFont(new java.awt.Font("Cascadia Code", 1, 48)); // NOI18N
         StartGame_Button.setForeground(new java.awt.Color(255, 255, 255));
-        StartGame_Button.setText("Start_____Game");
+        StartGame_Button.setText("PLAY");
         StartGame_Button.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         StartGame_Button.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
         StartGame_Button.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -691,15 +703,15 @@ public class UIBobaTruck extends javax.swing.JFrame {
         Menu_Panel1Layout.setHorizontalGroup(
             Menu_Panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Menu_Panel1Layout.createSequentialGroup()
-                .addGap(102, 102, 102)
-                .addComponent(StartGame_Button)
-                .addContainerGap(839, Short.MAX_VALUE))
+                .addGap(91, 91, 91)
+                .addComponent(StartGame_Button, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(831, Short.MAX_VALUE))
         );
         Menu_Panel1Layout.setVerticalGroup(
             Menu_Panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Menu_Panel1Layout.createSequentialGroup()
-                .addContainerGap(528, Short.MAX_VALUE)
-                .addComponent(StartGame_Button, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(525, Short.MAX_VALUE)
+                .addComponent(StartGame_Button, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(81, 81, 81))
         );
 
@@ -883,7 +895,6 @@ public class UIBobaTruck extends javax.swing.JFrame {
 
         background_kitchen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/Main_Game_Assets/main_background.png"))); // NOI18N
         background_kitchen.setFocusable(false);
-        background_kitchen.setMaximumSize(new java.awt.Dimension(1280, 667));
         background_kitchen.setVerifyInputWhenFocusTarget(false);
         Main.add(background_kitchen);
 
@@ -895,13 +906,13 @@ public class UIBobaTruck extends javax.swing.JFrame {
         background_outside.add(npc_slot1);
         npc_slot1.setBounds(820, 300, 100, 130);
 
-        npc_slot4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/Characters/npc_chineseV1.png"))); // NOI18N
-        background_outside.add(npc_slot4);
-        npc_slot4.setBounds(550, 300, 100, 130);
-
-        npc_slot3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/Characters/npc_fisherV1.png"))); // NOI18N
+        npc_slot3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/Characters/npc_chineseV1.png"))); // NOI18N
         background_outside.add(npc_slot3);
-        npc_slot3.setBounds(680, 300, 100, 130);
+        npc_slot3.setBounds(550, 300, 100, 130);
+
+        npc_slot2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Assets/Characters/npc_fisherV1.png"))); // NOI18N
+        background_outside.add(npc_slot2);
+        npc_slot2.setBounds(680, 300, 100, 130);
 
         Main.add(background_outside);
 
@@ -911,13 +922,19 @@ public class UIBobaTruck extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(Menu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(Main, javax.swing.GroupLayout.DEFAULT_SIZE, 1280, Short.MAX_VALUE))
+                .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(Main, javax.swing.GroupLayout.DEFAULT_SIZE, 1280, Short.MAX_VALUE)
+                    .addContainerGap()))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(Menu, javax.swing.GroupLayout.DEFAULT_SIZE, 667, Short.MAX_VALUE)
+            .addComponent(Menu, javax.swing.GroupLayout.DEFAULT_SIZE, 679, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(Main, javax.swing.GroupLayout.DEFAULT_SIZE, 667, Short.MAX_VALUE))
+                .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(Main, javax.swing.GroupLayout.DEFAULT_SIZE, 667, Short.MAX_VALUE)
+                    .addContainerGap()))
         );
 
         pack();
@@ -1019,7 +1036,7 @@ public class UIBobaTruck extends javax.swing.JFrame {
     private javax.swing.JLabel load4;
     private javax.swing.JPanel loading_phases;
     private javax.swing.JLabel npc_slot1;
+    private javax.swing.JLabel npc_slot2;
     private javax.swing.JLabel npc_slot3;
-    private javax.swing.JLabel npc_slot4;
     // End of variables declaration//GEN-END:variables
 }
