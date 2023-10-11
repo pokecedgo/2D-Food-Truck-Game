@@ -223,7 +223,7 @@ public class UIBobaTruck extends javax.swing.JFrame {
     String[] possible_orders = {"Bubble Tea", "Crepe", "Mamon", "Smoothie", "Milkshake"};
             
             
-       public void NPC_Randomization() {
+    public void NPC_Randomization() {
         spawnNPC(isVisible_Customer1, npc_slot1, Order_Display_1);
         spawnNPC(isVisible_Customer2, npc_slot2, Order_Display_2);
         spawnNPC(isVisible_Customer3, npc_slot3, Order_Display_3);
@@ -399,6 +399,9 @@ public class UIBobaTruck extends javax.swing.JFrame {
                               
                             String imageUrl = avatarList.get(selected_avatar);
                             Main_StarterCharacter.setIcon(new ImageIcon(imageUrl));
+                            
+                            //spawn initial customers
+                            NPC_Randomization();
                         }
                      });
                  });
