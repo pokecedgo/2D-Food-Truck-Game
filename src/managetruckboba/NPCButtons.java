@@ -12,8 +12,9 @@ import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
+
 import javax.swing.Timer;
+import static managetruckboba.UIBobaTruck.DelayMethod;
 
 /**
  *
@@ -33,28 +34,29 @@ public class NPCButtons {
     private JButton Order_Bubble3;
     
     //handler for order buttons
-    private boolean button1_pressable;
-    private boolean button2_pressable;
-    private boolean button3_pressable;
-    
-    private JLabel Main_StarterCharacter;
+
+    private static JLabel Main_StarterCharacter;
     private JButton Station_Crepes;
     private JButton Station_Drinks;
     private JButton Station_Bakery;
     
-    private JLabel Order_List;
+    private static JLabel Order_List;
     
     private JLabel clock_display1;
     private JLabel clock_display2;
     private JLabel clock_display3;
     private JLabel Sales_Display;
-    private JLabel Stats_Display;
+    private JLabel Stats_Display; 
+    private JLabel Rating_Display;
+    
+    private static JButton Tip_Jar;
+    private static JLabel Info_Display;
 
     String[] greetings = {"Waiting!", ":)", "<3","Okay!","Sweet!"};
     
     private Stats stats;
 
-    public void share_data(JLabel stats,JLabel sales, JLabel main_c, JButton crepes, JButton bakery, JButton drinks, JLabel d1, JLabel d2, JLabel d3, JButton b1, JButton b2, JButton b3, JLabel orderlist, JLabel cd1, JLabel cd2, JLabel cd3) {
+    public void share_data(JLabel info, JButton jar, JLabel ratings, JLabel stats,JLabel sales, JLabel main_c, JButton crepes, JButton bakery, JButton drinks, JLabel d1, JLabel d2, JLabel d3, JButton b1, JButton b2, JButton b3, JLabel orderlist, JLabel cd1, JLabel cd2, JLabel cd3) {
         System.out.println("Data Shared with NPCButtons.java");
         this.Order_Display_1 = d1;
         this.Order_Display_2 = d2;
@@ -77,6 +79,10 @@ public class NPCButtons {
         
         this.Sales_Display = sales;
         this.Stats_Display = stats;
+        this.Rating_Display = ratings;
+        
+        this.Tip_Jar = jar;
+        this.Info_Display = info;
         
     
     
@@ -93,23 +99,23 @@ public class NPCButtons {
         Random random = new Random();
         
         SoundHandler playSound = new SoundHandler();
+       
         // Button 1
         Order_Bubble1.addActionListener(new ActionListener() {
               public void actionPerformed(ActionEvent e) { 
                   // Play click sound 
                   playSound.playSound("src/SoundAssets/click.wav");
 
-                  if (button1_pressable == true) {
-                      button1_pressable = false;
+                  if (stats.isButton1Pressable() == true) {
+                      stats.setButton1Pressable(false);
                       // Get the slot for this button (you should specify the slot logic)
                       String slot = "Slot1";
                       // Get the order text from the display
                       String order = Order_Display_1.getText();
 
                       // Add the order to the pending_orders HashMap
-                      Stats stats = new Stats();
-                      
-                      stats.getPendingOrders(slot, order);
+    
+                      stats.addPendingOrder(slot, order);
 
                       int randomIndex = random.nextInt(greetings.length);
                       String random_greet = greetings[randomIndex];
@@ -128,17 +134,16 @@ public class NPCButtons {
                   // Play click sound 
                   playSound.playSound("src/SoundAssets/click.wav");
 
-                  if (button2_pressable == true) {
-                      button2_pressable = false;
+                  if (stats.isButton2Pressable() == true) {
+                      stats.setButton2Pressable(false);
                       // Get the slot for this button (you should specify the slot logic)
                       String slot = "Slot2";
                       // Get the order text from the display
                       String order = Order_Display_2.getText();
 
                       // Add the order to the pending_orders HashMap
-                      Stats stats = new Stats();
-                      
-                      stats.getPendingOrders(slot, order);
+
+                      stats.addPendingOrder(slot, order);
 
 
                       int randomIndex = random.nextInt(greetings.length);
@@ -158,17 +163,16 @@ public class NPCButtons {
                   // Play click sound 
                   playSound.playSound("src/SoundAssets/click.wav");
 
-                  if (button3_pressable == true) {
-                      button3_pressable = false;
+                  if (stats.isButton3Pressable()== true) {
+                      stats.setButton3Pressable(false);
                       // Get the slot for this button (you should specify the slot logic)
                       String slot = "Slot3";
                       // Get the order text from the display
                       String order = Order_Display_3.getText();
 
                       // Add the order to the pending_orders HashMap
-                      Stats stats = new Stats();
-                      
-                      stats.getPendingOrders(slot, order);
+
+                      stats.addPendingOrder(slot, order);
 
 
                       int randomIndex = random.nextInt(greetings.length);
@@ -189,22 +193,19 @@ public class NPCButtons {
             public void actionPerformed(ActionEvent e) { 
                 // Play click sound 
                 playSound.playSound("src/SoundAssets/click.wav");
-                System.out.println("Station Pressed: Crepe");
+                System.out.println("Station Pressed: Crepe "+ stats.isCrepeButtonPressable());
   
                 // Check if the user is nearby the Crepe station
                 if (isPlayerCloseToStation("Crepe") == true && stats.isCrepeButtonPressable() == true) {
                     System.out.println("Player is Close to Crepe Station");
-                    String current_slot = null; // Initialize current_slot as null
-                    
-                    Stats stats = new Stats();
-                      
+                    String current_slot = null; // Initialize current_slot as null              
               
                     for (Map.Entry<String, String> entry : stats.getPendingOrdersEntrySet()) {
                         String slot = entry.getKey();
                         String order = entry.getValue();
 
                         // Check if the order exists in the possible_orders array
-                        if (Arrays.asList(stats.getPossibleOrders()).contains(order)) {
+                        if (Arrays.asList(stats.getPossibleOrders()).contains(order) && stats.compareItemExistence(order, "Crepe")) {
                             System.out.print("     | Initiating process for Station");
                           
                             stats.setCrepeButtonPressable(false);                     
@@ -232,19 +233,18 @@ public class NPCButtons {
             public void actionPerformed(ActionEvent e) { 
                 // Play click sound 
                 playSound.playSound("src/SoundAssets/click.wav");
-                System.out.println("Station Pressed: Bakery");
+                System.out.println("Station Pressed: Bakery "+ stats.isBakeryButtonPressable());
                 // Check if the user is nearby the Crepe station
                 if (isPlayerCloseToStation("Bakery") == true && stats.isBakeryButtonPressable() == true) {
                     System.out.println("Player is Close to Bakery Station");
                     String current_slot = null; // Initialize current_slot as null
-                    
-                    Stats stats = new Stats();
+
                     for (Map.Entry<String, String> entry : stats.getPendingOrdersEntrySet()) {
                         String slot = entry.getKey();
                         String order = entry.getValue();
                         
                         // Check if the order exists in the possible_orders array
-                        if (Arrays.asList(stats.getPossibleOrders()).contains(order)) {
+                        if (Arrays.asList(stats.getPossibleOrders()).contains(order) && stats.compareItemExistence(order, "Bakery")) {
                             System.out.print("     | Initiating process for Station");
                             
                             stats.setBakeryButtonPressable(false);
@@ -272,27 +272,24 @@ public class NPCButtons {
             public void actionPerformed(ActionEvent e) { 
                 // Play click sound 
                 playSound.playSound("src/SoundAssets/click.wav");
-                System.out.println("Station Pressed: Drinks");
+                System.out.println("Station Pressed: Drinks "+ stats.isDrinksButtonPressable());
                 // Check if the user is nearby the Crepe station
                 if (isPlayerCloseToStation("Drinks") == true && stats.isDrinksButtonPressable() == true) {
                     System.out.println("Player is Close to Drinks Station");
                     String current_slot = null; // Initialize current_slot as null
-                   
-                    Stats stats = new Stats();
-                                          
-                    
+   
                     for (Map.Entry<String, String> entry : stats.getPendingOrdersEntrySet()) {
                         String slot = entry.getKey();
                         String order = entry.getValue();
 
                         // Check if the order exists in the possible_orders array
-                        if (Arrays.asList(stats.getPossibleOrders()).contains(order)) {
+                        if (Arrays.asList(stats.getPossibleOrders()).contains(order) && stats.compareItemExistence(order, "Drinks")) {
                             System.out.print("     | Initiating process for Station");
                             
                             stats.setDrinksButtonPressable(false);   
                             // Store the current slot in the current_slot variable
                             current_slot = slot; // slot 1, 2, or 3
-                            playSound.playSound("src/SoundAssets/click.wav");
+                            playSound.playSound("src/SoundAssets/Blender.wav");
                             // Disable player movement
                             
                             PlayerMovement updateCanMove = new PlayerMovement();
@@ -307,6 +304,29 @@ public class NPCButtons {
                 }
             }
         });    
+        
+        
+        
+        //Tip Button
+        Tip_Jar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) { 
+                if(stats.getTips() > 0) {
+                 SoundHandler sound = new SoundHandler();
+                 sound.playSound("src/SoundAssets/CashSound.wav");
+                 
+                 stats.updateTips_Int();
+                 //update text
+                 Tip_Jar.setText("$"+stats.getTips());
+                 stats.updateStatsDispay();
+                 
+                 
+                 String formattedString = String.format("%.2f$", stats.getDayEarnings());
+                 Sales_Display.setText(formattedString);
+                 
+                 
+                }
+            }
+        });
     }
     
     
@@ -322,12 +342,15 @@ public class NPCButtons {
 
         // Check if the station is in progress
         boolean stationInProgress = false;
-        final int[] currentDuration = { 0 }; // Declare as final and use an array
+        final int[] currentDuration = { 0 }; 
         final String[] imagePaths;
-        final int[] currentImageIndex = { 0 }; // Use an array to make it effectively final
+        final int[] currentImageIndex = { 0 }; 
+
         
-        Stats stats = new Stats();
+        clock_display.setVisible(true);
+
         if (station.equals("Crepe") && stats.getCrepeDuration() > 0) {
+            System.out.println("Station Chosen: "+station);
             stationInProgress = true;
             currentDuration[0] = stats.getCrepeDuration(); // Assign the initial value
             imagePaths = new String[] {
@@ -339,6 +362,7 @@ public class NPCButtons {
             // Initialize the clock animation timer
             initializeClockAnimationTimer(imagePaths, clock_display);
         } else if (station.equals("Bakery") && stats.getBakeryDuration() > 0) {
+            System.out.println("Station Chosen: "+station);
             stationInProgress = true;
             currentDuration[0] = stats.getBakeryDuration(); // Assign the initial value
             imagePaths = new String[] {
@@ -350,13 +374,14 @@ public class NPCButtons {
             // Initialize the clock animation timer
             initializeClockAnimationTimer(imagePaths, clock_display);
         } else if (station.equals("Drinks") && stats.getDrinksDuration() > 0) {
+            System.out.println("Station Chosen: "+station);
             stationInProgress = true;
             currentDuration[0] = stats.getDrinksDuration(); // Assign the initial value
             imagePaths = new String[] {
                 "src/Assets/Main_Game_Assets/Clock_Frames/clock_frame1.png",
                 "src/Assets/Main_Game_Assets/Clock_Frames/clock_frame2.png",
                 "src/Assets/Main_Game_Assets/Clock_Frames/clock_frame3.png"
-                // Add more image paths here to match the desired duration
+                
             };
 
             // Initialize the clock animation timer
@@ -365,38 +390,35 @@ public class NPCButtons {
             return;
         }
         
-        /*
-        Where we left off:
-        1. Clock continuously gets stuck on loop on anything after first order? (Bakery station test case)
-        2. Character teleports to starting position when a station button is pressed
-        3. NPC Respawning is a little buggy (The display text isnt proper and npc is not disappearing during the reload option)
-        */
         if (stationInProgress) {
-            System.out.println(station + " Station in Progress!");
-            Timer timer = new Timer(1000, new ActionListener() {
+            final Timer timer = new Timer(1000, null); 
+            
+            timer.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                       
                     if (currentDuration[0] > 0) {
                         currentDuration[0]--;
-                    } else if (debounce_completed == false && orderCompleted == false) {
-                        debounce_completed = true;
+                    
+                    } else {
+                        //debounce_completed = true;
 
                         // Preparation Completed
                         System.out.println("\n-------------\nOrder Completed! [" + station + " Station]\n----------------\n");
                         clock_display.setVisible(false);
                         clock_display.setIcon(new ImageIcon(""));
-                        
-                        Stats stats = new Stats();
+                        clockAnimationTimer.stop();
+    
                         // Reset debounce buttons
                         if (station.equals("Crepe")) {
-                            stats.setCrepeButtonPressable(false);
-                            stats.setCrepeDuration();
+                            stats.setCrepeButtonPressable(true);
+                            stats.setCrepeDuration(8);
                         } else if (station.equals("Bakery")) {
-                            stats.setBakeryButtonPressable(false);
-                            stats.setBakeryDuration();
+                            stats.setBakeryButtonPressable(true);
+                            stats.setBakeryDuration(8);
                         } else if (station.equals("Drinks")) {
-                            stats.setDrinksButtonPressable(false);
-                            stats.setDrinksDuration();
+                            stats.setDrinksButtonPressable(true);
+                            stats.setDrinksDuration(8);
                        
                         }
                         // Enable player movement
@@ -409,6 +431,10 @@ public class NPCButtons {
 
                         // Set orderCompleted to true for the next order
                         orderCompleted = true;
+                        clockImageIndex = 0;
+                        
+                        timer.stop();
+     
                     }
                 }
             });
@@ -428,7 +454,7 @@ public class NPCButtons {
             public void actionPerformed(ActionEvent e) {
                 // Display the current clock frame
                 clock_display.setIcon(new ImageIcon(imagePaths[clockImageIndex]));
-
+     
                 // Increment the image index and loop back to the first image if needed
                 clockImageIndex = (clockImageIndex + 1) % imagePaths.length;
             }
@@ -493,15 +519,25 @@ public class NPCButtons {
         StringBuilder finalList = new StringBuilder("<html>");
 
         int index = 1;
-        
-        Stats stats = new Stats();
-        for (String order : stats.getPendingOrdersValues()) {
-            finalList.append(index++).append(". ").append(order).append("<br>");
+
+        if (stats.getPendingOrders().isEmpty()) {
+            System.out.println("The order list is empty.");
+        }
+
+        // If you want to loop through both keys and values of the map:
+        for (Map.Entry<String, String> entry : stats.getPendingOrders().entrySet()) {
+            String slot = entry.getKey();
+            String order = entry.getValue();
+
+            System.out.println("Slot: " + slot + ", Order: " + order);
+            finalList.append(index++).append(". ").append(order).append("<br>"); // Modify as per your needs
         }
 
         finalList.append("</html>");
 
         Order_List.setText(finalList.toString());
+
+  
     }
     
 
@@ -525,11 +561,22 @@ public class NPCButtons {
         return false;
     }
     
+    
+    public void updateTipDisplay() {
+        Random random = new Random();
+        int tipAmount = 4 + random.nextInt(7);
+        
+        stats.updateTips(tipAmount);
+        System.out.println("Tip amount: " + tipAmount);
+        Tip_Jar.setText("$"+stats.getTips());
+    }
     public void updateStats(String slot) {
         Random random = new Random();
-        Stats stats = new Stats();
+  
         // Determine if it's a missed customer and check if order is still an existing order
         if (completeOrder(slot) == true && stats.hasPendingOrder(slot)) {
+            Info_Display.setVisible(true);
+            Info_Display.setText("Order Success!");
             // Successful order completion
             if (slot.equals("Slot1")) {
                 Order_Display_1.setText("Thanks!");
@@ -546,27 +593,23 @@ public class NPCButtons {
             String formattedString = String.format("%.2f$", stats.getDayEarnings());
             Sales_Display.setText(formattedString);
 
-            
-            System.out.println("Earnings today: " + earningsToday);
-
-            // Increase total earnings by a random selected amount
-            double earningsIncrease = 1 + random.nextDouble() * 10;
-            stats.updateTotalEarnings(earningsIncrease);
-            System.out.println("Earnings increase: " + earningsIncrease);
+            stats.updateTotalEarnings(earningsToday);
+            System.out.println("Earnings increase: " + earningsToday);
             
             // 50% chance customer tips
             if (random.nextBoolean()) {
                 // If tips, add on a random tip amount 4-10$
-                double tipAmount = 4 + random.nextDouble() * 7;
-                stats.updateTips(tipAmount);
-                System.out.println("Tip amount: " + tipAmount);
+                updateTipDisplay();
             }
-
+            
+            //Play Sound
+            SoundHandler sound = new SoundHandler();
+            sound.playSound("src/SoundAssets/CashSound.wav");
             // Calculate new Truck rating
             
             stats.updateRating(stats.calculateRating());
             System.out.println("New Truck rating: " + stats.getRating());
-            Stats_Display.setText("Rating: " + stats.getRating());
+            Rating_Display.setText("Rating: " + (stats.getRating() < 5 ? stats.getRating() : 5));
             
             //remove the order completed from Pending_order hashmap
             stats.removeOrderFromPendingOrders(slot);
@@ -574,18 +617,27 @@ public class NPCButtons {
             //notepad update
             updateNotePad();
             
-            NPC_Spawning npc = new NPC_Spawning();
-            //respawn function for specific slots
-            if(slot.equals("Slot1")) {    
-                npc.NPC_Respawn(1);
-            } else if(slot.equals("Slot2")) {
-                npc.NPC_Respawn(2);
-            } else if(slot.equals("Slot3")) {
-                npc.NPC_Respawn(3);
-            }
+            DelayMethod(2, () -> {
+                NPC_Spawning npc = new NPC_Spawning();
+                    //respawn function for specific slots
+                if(slot.equals("Slot1")) {    
+                   npc.NPC_Respawn(1);
+                } else if(slot.equals("Slot2")) {
+                   npc.NPC_Respawn(2);
+                } else if(slot.equals("Slot3")) {
+                   npc.NPC_Respawn(3);
+                }   
+                
+                Info_Display.setVisible(false);
+            });
 
- 
+            //Update Stats Label
+           
+             stats.updateStatsDispay();
+             debounce_completed = false;
         } else if (completeOrder(slot) == false && stats.hasPendingOrder(slot)) { // Order Missed!
+            Info_Display.setVisible(true);
+            Info_Display.setText("Order Missed!");
             // Remove the start time entry from the HashMap
             stats.removeEntryFromOrderStartTime(slot);
 
@@ -600,20 +652,38 @@ public class NPCButtons {
             // Take a life away if not already at minimum health
             if (stats.getCurrentHealth() > 0) {
                 stats.updateCurrentHealth();
+                stats.updateMissedCustomers();
+                 //Don't need to add Stats just remove order and respawn NPC
+                 //remove the order completed from Pending_order hashmap
+                 stats.removeOrderFromPendingOrders(slot);
+                 stats.updateCompletedOrders();
+                 //notepad update
+                 updateNotePad();
+                DelayMethod(2, () -> {
+                    NPC_Spawning npc = new NPC_Spawning();
+                    //respawn function for specific slots
+                    if(slot.equals("Slot1")) {    
+                         npc.NPC_Respawn(1);
+                    } else if(slot.equals("Slot2")) {
+                         npc.NPC_Respawn(2);
+                    } else if(slot.equals("Slot3")) {
+                         npc.NPC_Respawn(3);
+                    }   
+                    
+                    Info_Display.setVisible(false);
+                });
+ 
             } else {
                 // All mistakes used, reset the game
                 Reset reset = new Reset();
                 reset.Reset_Game();
             }
-        } else {
+        } else if (stats.getCurrentHealth() <= 0) {
             //if this runs, its a part of the loop
             return;
         }
         
-        //Update Stats Label
-        String formattedString = String.format("%.2f$", stats.getTotalEarnings());
-        Stats_Display.setText("Total Earnings: $"+formattedString+"  Days Survived["+(int)stats.getDaysSurvived()+"]");
-        debounce_completed = false;
+        
         
     }
 

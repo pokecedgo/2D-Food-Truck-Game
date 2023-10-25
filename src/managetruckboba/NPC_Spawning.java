@@ -20,15 +20,16 @@ import static managetruckboba.UIBobaTruck.DelayMethod;
  *
  * @author pokec
  */
-public class NPC_Spawning extends UIBobaTruck{
+public class NPC_Spawning extends Stats {
     //Avatar Option [Mechanics]
-    private int selected_avatar = 0; 
+    private static int selected_avatar = 0; 
     
     private Map<String, String> avatarTable = new HashMap<>();
     {
         avatarTable.put("Default", "src/Assets/Characters/Character_Steve.png"); //0
         avatarTable.put("Chef", "src/Assets/Characters/Character_Chef.png"); //1
         avatarTable.put("Farmer", "src/Assets/Characters/Character_Farmer.png");
+        avatarTable.put("Pirate", "src/Assets/Characters/Character_Pirate.png");
          
 
     }
@@ -57,20 +58,20 @@ public class NPC_Spawning extends UIBobaTruck{
     private java.util.List<String> unloaded_npcs = new ArrayList<>(npcsList);
     //Labels
     
-    private JLabel Order_Display_1;
-    private JLabel Order_Display_2;
-    private JLabel Order_Display_3;
+    private static JLabel Order_Display_1;
+    private static JLabel Order_Display_2;
+    private static JLabel Order_Display_3;
     
-    private JLabel npc_slot1;
-    private JLabel npc_slot2;
-    private JLabel npc_slot3;
+    private static JLabel npc_slot1;
+    private static JLabel npc_slot2;
+    private static JLabel npc_slot3;
     
     
-    private JButton Order_Bubble1;
-    private JButton Order_Bubble2;
-    private JButton Order_Bubble3;
+    private static JButton Order_Bubble1;
+    private static JButton Order_Bubble2;
+    private static JButton Order_Bubble3;
     
-    private JPanel Main;
+    private static JPanel Main;
     
     private boolean rushHour = false;
     //NPC Customers System
@@ -83,28 +84,29 @@ public class NPC_Spawning extends UIBobaTruck{
   
     //Game Menu Functions 
     
-    private JButton StartGame_Button;
-    private JPanel Menu_Panel1;
-    private JPanel HowToPanel;
-    private JLabel background_game_menu;
-    private JPanel loading_phases;
+    private static JButton StartGame_Button;
+    private static JPanel Menu_Panel1;
+    private static JPanel HowToPanel;
+    private static JLabel background_game_menu;
+    private static JPanel loading_phases;
     
-    private JLabel load1;
-    private JLabel load2;
-    private JLabel load3;
-    private JLabel load4;
+    private static JLabel load1;
+    private static JLabel load2;
+    private static JLabel load3;
+    private static JLabel load4;
     
-    private JButton Select_Left;
-    private JButton Select_Right;
+    private static JButton Select_Left;
+    private static JButton Select_Right;
     
-    private JLabel StarterCharacter;
-    private JLabel Main_StarterCharacter;
-    private JPanel Menu;
+    private static JLabel StarterCharacter;
+    private static JLabel Main_StarterCharacter;
+    private static JPanel Menu;
+    private static JLabel Countdown_Display;
     
 
-    public void share_data(JPanel main, JLabel d1, JLabel d2, JLabel d3, JLabel slot1, JLabel slot2, JLabel slot3, JButton b1, JButton b2, JButton b3) {
+    public void share_data(JPanel main, JLabel d1, JLabel d2, JLabel d3, JLabel slot1, JLabel slot2, JLabel slot3, JButton b1, JButton b2, JButton b3, JLabel cd) {
         this.Order_Display_1 = d1;
-        this.Order_Display_2 = d2; // Fixed the assignment
+        this.Order_Display_2 = d2;
         this.Order_Display_3 = d3;
 
         this.npc_slot1 = slot1;
@@ -116,7 +118,15 @@ public class NPC_Spawning extends UIBobaTruck{
         this.Order_Bubble3 = b3;
         
         this.Main = main;
+        this.Countdown_Display = cd;
            
+    }
+    
+    public void ResetGame() {
+        rushHour = false;
+        isVisible_Customer1 = true;
+        isVisible_Customer2= true;
+        isVisible_Customer3 = true;
     }
 
     public String returnAvatarList() {
@@ -129,10 +139,10 @@ public class NPC_Spawning extends UIBobaTruck{
      }
      
     public void spawnNPC(boolean isVisible, JLabel npc_slot, JLabel orderDisplay) {   
-        Stats stats = new Stats();
+       
         
         if (isVisible && npc_slot.getIcon() == null) {
-            // active npc
+            // active npc 
             return;
         }
 
@@ -143,8 +153,9 @@ public class NPC_Spawning extends UIBobaTruck{
             Order_Display_1.setVisible(false);
             npc_slot1.setVisible(false);
             Order_Bubble1.setVisible(false);
+            
         } else if (orderDisplay.equals(Order_Display_2)) {
-            // slot 2
+            // slot 2 
             Order_Display_2.setVisible(false);
             npc_slot2.setVisible(false);
             Order_Bubble2.setVisible(false);
@@ -154,7 +165,8 @@ public class NPC_Spawning extends UIBobaTruck{
             npc_slot3.setVisible(false);
             Order_Bubble3.setVisible(false);
         }
-        
+        Main.revalidate();
+        Main.repaint();
         // inactive npc, spawn npc (Can Spawn)
         Random random = new Random();
         int randomWait = rushHour ? 1 : 1 + random.nextInt(5); // Adjusted delay range to 1-5 seconds
@@ -174,48 +186,54 @@ public class NPC_Spawning extends UIBobaTruck{
             // Add the NPC to the loaded list
             current_loaded_npcs.add(randomImage);
 
-            randomIndex = random.nextInt(stats.getPossibleOrders().length);
-            String random_order = stats.getPossibleOrders()[randomIndex];
+            randomIndex = random.nextInt(getPossibleOrders().length);
+            String random_order = getPossibleOrders()[randomIndex];
             orderDisplay.setText(random_order);
             
             System.out.println("Order selected: "+random_order);
             Main.revalidate();
             Main.repaint();
             
+
             //make button pressable true
-            if (orderDisplay.equals("Order_Display_1")) {
-                stats.setButton1Pressable(true);
-            } else if (orderDisplay.equals("Order_Display_2")) {
-                stats.setButton2Pressable(true);
-            } else if (orderDisplay.equals("Order_Display_3")) {
-                stats.setButton3Pressable(true);
+            if (orderDisplay.equals(Order_Display_1)) {
+                setButton1Pressable(true);
+            } else if (orderDisplay.equals(Order_Display_2)) {
+                setButton2Pressable(true);
+            } else if (orderDisplay.equals(Order_Display_3)) {
+                setButton3Pressable(true);
             }   
             
             
                 //conditoning statements to make respective labels visible = true
-            if(orderDisplay.equals("Order_Display_1")) {
+            if(orderDisplay.equals(Order_Display_1)) {
                 //slot 1 
+                System.out.println("Displaying NPC Slot 1!!");
+                
+                /* where we left off
+                    debugging NPC Spawning display
+                */
                 Order_Display_1.setVisible(true);
                 npc_slot1.setVisible(true);
                 Order_Bubble1.setVisible(true);
                 
-                stats.setButton1Pressable(true);
+                setButton1Pressable(true);
 
-            } else if(orderDisplay.equals("Order_Display_2")) {
+            } else if(orderDisplay.equals(Order_Display_2)) {
                 //slot 2
                 Order_Display_2.setVisible(true);
                 npc_slot2.setVisible(true);
                 Order_Bubble2.setVisible(true);
                 
-                stats.setButton2Pressable(true);
+                setButton2Pressable(true);
                 
-            } else if(orderDisplay.equals("Order_Display_3")) {
+            } else if(orderDisplay.equals(Order_Display_3)) {
                 //slot 3
                 Order_Display_3.setVisible(true);
                 npc_slot3.setVisible(true);
                 Order_Bubble3.setVisible(true);
                 
-                stats.setButton3Pressable(true);
+                setButton3Pressable(true);
             }
             });
         
@@ -231,12 +249,12 @@ public class NPC_Spawning extends UIBobaTruck{
        if(slot == 1) {
          spawnNPC(isVisible_Customer1, npc_slot1, Order_Display_1);
        } else if (slot == 2) { 
-         spawnNPC(isVisible_Customer2, npc_slot2, Order_Display_3);
+         spawnNPC(isVisible_Customer2, npc_slot2, Order_Display_2);
        } else if (slot == 3) {
-         spawnNPC(isVisible_Customer3, npc_slot3, Order_Display_2);
+         spawnNPC(isVisible_Customer3, npc_slot3, Order_Display_3);
        } else {
          System.out.println("Invalid NPC Slot to respawn!");
-        }
+       }
     }
 
     public void NPC_Randomization() {
@@ -379,9 +397,8 @@ public class NPC_Spawning extends UIBobaTruck{
                             Menu.setVisible(false);
                             Main.setVisible(true);
                             
-                         
-                            Stats updateVariable = new Stats();
-                            updateVariable.updateRespawnBoolean(true);
+                     
+                            updateRespawnBoolean(true);
 
                             
                             //enable movement and change booleans
@@ -389,39 +406,21 @@ public class NPC_Spawning extends UIBobaTruck{
                             updateMove.updateCanMove(true);
           
                             //Update hasStartedPlaying
-                            Stats stats = new Stats();
-                            stats.updateRespawnBoolean(true); //hasstartedplaying = true
+                          
+                            updateRespawnBoolean(true); //hasstartedplaying = true
                             //update avatar (Main Game) 
     
                             String imageUrl = getImageUrl();
                             Main_StarterCharacter.setIcon(new ImageIcon(imageUrl));
-                            
-                            //Start Round Timer
-                            DaysSurvivedTimer();
-                            
+                                             
+                            //start timer
+                            RoundTimer(Countdown_Display);
                             
                         }
                      });
                  });
              });
          });
-     }
-    
-     private void DaysSurvivedTimer() {
-       //Call this when game starts
-       //Each Day lasts for 2 Minutes
-       
-       //Loop, check on each iteration if current_health > 0) else break, reset and end timer
-        //once timer ends
-        
-          Reset newRound = new Reset();
-          newRound.Start_New_Round();
-    }
-   
-   
-
-
-  
-    
+     }   
     
 }

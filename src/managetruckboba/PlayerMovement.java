@@ -5,6 +5,7 @@
 package managetruckboba;
 
 import java.awt.event.ActionEvent;
+import java.util.Random;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -19,41 +20,47 @@ import javax.swing.KeyStroke;
 
 
 public class PlayerMovement {
-    private boolean canMove = true;
+    private static boolean canMove = true;
     private boolean hasStartedPlaying = false;
     
-    private JPanel Main;
+    private static JPanel Main;
     
-    private JLabel Main_StarterCharacter;
-    private JPanel Character_Walking_Area;
+    private static JLabel Main_StarterCharacter;
+    private static JPanel Character_Walking_Area;
     //Movement Variables
-    private int playerX = 50; 
-    private int playerY = 50;
+    private static int playerX = 50; 
+    private static int playerY = 50;
     private int speed = 8; //stud increment    
                 
-    public void share_data(JPanel main, boolean canMove, boolean game_started) {
+    public void share_data(boolean canMove, boolean game_started, JPanel main, JLabel character, JPanel area) {
 
         this.canMove = canMove;
         this.hasStartedPlaying = game_started;
         this.Main = main;
+      
+        this.Main_StarterCharacter = character;
+        this.Character_Walking_Area = area;
+
     }
     
     public void updateCanMove(boolean data) {
         this.canMove = data;
   
     }
+
+    public void RestToDefaultPos() {
+        //default pos
+        playerX = 50;
+        playerY = 50;
+        canMove = false;
+        steps = 0;
+        Main_StarterCharacter.setLocation(playerX, playerY);
+    }
     
-    public void MovementSystem(JPanel main, JLabel character, JPanel area,int initial_x, int initial_y) {
-        this.Main = main;
-        this.Main_StarterCharacter = character;
-        this.Character_Walking_Area = area;
-        
-                
-        this.playerX = initial_x;
-        this.playerY = initial_y;
-        
+    public void MovementSystem() {
         Stats hasStarted = new Stats();   
         hasStarted.updateRespawnBoolean(true);
+        updatePlayerPosition();
         
         // Define actions for each movement direction
         Action moveUp = new AbstractAction() {
@@ -61,7 +68,7 @@ public class PlayerMovement {
             public void actionPerformed(ActionEvent e) {
                 if (hasStarted.getIsPlaying() == true && canMove == true) {
                     playerY -= speed;
-                    updatePlayerPosition();
+                    updatePlayerPosition();          
                 }
             }
         };
@@ -116,9 +123,19 @@ public class PlayerMovement {
         // setFocusable(true);   // setting this true causes bugs for some reason
     }
 
-
+    //every 5th step
+    private static int steps = 0;
 
     private void updatePlayerPosition() {
+      if (canMove == true) {
+        SoundHandler playSound = new SoundHandler();
+        
+        steps++;
+        
+        if(steps % 5 == 0) {
+          playSound.playSound("src/SoundAssets/footstep.wav");
+        }
+ 
         // Calculate the boundaries of the panel
         int panelWidth = Character_Walking_Area.getWidth();
         int panelHeight = Character_Walking_Area.getHeight();
@@ -137,8 +154,9 @@ public class PlayerMovement {
 
         // Update the player's position
         Main_StarterCharacter.setLocation(playerX, playerY);
+
+
+        
+      }  
     }
-
-
-            
 }
